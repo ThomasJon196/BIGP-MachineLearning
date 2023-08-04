@@ -6,7 +6,15 @@ Bayesian Inference & Gaussian Processes for Machine Learning
 
 ## Intention
 
-- Revise GP regression
-- Create concise Jupyternotebook
+- Revise `GP regression`
+- Create concise `Jupyternotebook`
+- Create minimal interactive data visualization with `streamlit`
 - Showcase for portfolio
+
+
+## Directories
+
+- `notebooks/`: *gaussian processes* implementation from scratch.
+
+- `streamlitapp/`: python script for data visialization.
 
