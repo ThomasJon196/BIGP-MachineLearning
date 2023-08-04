@@ -1,17 +1,30 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-# import plotly.express as px
+from streamlit_plotly_events import plotly_events
 import plotly.graph_objs as go
-
+import plotly.express as px
 from gp_utils import gp_regression
+from streamlit_autorefresh import st_autorefresh
 
-# Streamlit setup
+
 st.set_page_config(layout="wide")
 
 
+
+
+# Run the autorefresh about every 2000 milliseconds (2 seconds) and stop
+# after it's been refreshed 100 times.
+# count = st_autorefresh(interval=2000, limit=100, key="fizzbuzzcounter")
+
+st.title('Gaussian Processes Regression')
+
+if 'input_points' not in st.session_state:
+    st.session_state.input_points = []  
+
+
 # Helper functions
-def create_initial_plot():
+def create_meshgrid():
 
     # nx, ny = (5, 5)
     # x = np.linspace(-5, 5, nx)
@@ -25,12 +38,34 @@ def create_initial_plot():
 
     # Can write inside of things using with!
     # with st.expander('Plot'):
+    fig = go.Figure()
+
+    fig.update_layout(
+    autosize=False,
+    width=1200,
+    height=500,)
+
+    fig.add_trace(go.Scatter(x=x, y=y, mode='markers',marker=dict(size=20, color="black")))
 
     # Select other Plotly events by specifying kwargs
     # fig = px.line(x=[1], y=[1])
     # selected_points = plotly_events(fig, click_event=False, hover_event=True)
 
     return fig
+
+
+def update_user_input(current_input):
+    if len(current_input) != 0:
+        
+        x = current_input[0].get("x")
+        y = current_input[0].get("y")
+        point = [x, y]
+        if point in st.session_state.input_points:
+            st.session_state.input_points.remove(point)
+        else:
+            st.session_state.input_points.append(point)
+        
+        st.experimental_rerun()
 
 
 def retrieve_user_input():
@@ -46,7 +81,7 @@ def retrieve_user_input():
         return x, y
     else:
         return [], []
-
+    
 
 def add_gp_regression_to_trace(fig):
     
@@ -67,70 +102,24 @@ def add_gp_regression_to_trace(fig):
 
 
 # Main script
-st.title('Gaussian Processes Regression')
+st.write("Select the black dots to start the regression.")
 
-if 'input_points' not in st.session_state:
-    st.session_state.input_points = []  
+fig = create_meshgrid()
 
+add_gp_regression_to_trace(fig)
 
-if st.button('Sample random point'):
+selected_point = plotly_events(fig)
 
-    x = np.random.rand() * 20 - 10
-    y = np.random.rand() * 10 - 5
-
-    st.session_state.input_points.append([x, y])
-
-    st.write('Sampled:', x, y)
-
-n_predictions = 100
-
-x_pred = np.linspace(-10, 10, n_predictions)
-y = np.linspace(-5, 5, 100)
-
-# fig = px.line(x=x, y=y)
-
-## Plotting
-fig = go.Figure()
-
-fig.update_yaxes(range=[-5, 5])
-fig.update_xaxes(range=[-10, 10])
-fig.update_layout(
-autosize=False,
-width=1200,
-height=500,)
+update_user_input(selected_point)
 
 
-## Retrieve observations
-x, y = retrieve_user_input()
-
-# GP Calc
-
-def calc_gp_regression(x, y, x_pred):
-    observations = {}
-    observations["x"] = np.asarray(x)
-    observations["Y"] = np.asarray(y)
-
-    mean, conf_interval = gp_regression(observations, x_pred)
-    return mean, conf_interval
-
-mean, conf_interval = calc_gp_regression(x, y, x_pred)
-
-
-# GP plot
-
-# def plot_gp():
-fig.add_trace(go.Scatter(x=x_pred, y=mean, mode='lines'))
-
-fig.add_trace(go.Scatter(x=x, y=y, mode='markers',marker=dict(size=10)))
-
-
-
-st.plotly_chart(fig)
 
 
 # Debug info
+st.write("Saved points:", st.session_state.input_points)
+
+st.write(selected_point)
 
 
 
-
-
+# st.experimental_rerun()

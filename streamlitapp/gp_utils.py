@@ -43,7 +43,7 @@ def optimize_hyperparams(observations):
 
     l_opt = res.x[0]
     sig_opt = res.x[1]
-    print(f"Optimized Lenghtscale & Variance of rbf-kernel: {res.x}")
+    # print(f"Optimized Lenghtscale & Variance of rbf-kernel: {res.x}")
     return l_opt, sig_opt
 
 
